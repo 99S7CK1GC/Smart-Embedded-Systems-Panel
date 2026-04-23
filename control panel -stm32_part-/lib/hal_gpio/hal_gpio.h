@@ -1,4 +1,9 @@
 #pragma once
+
+#include <libopencm3/esp32/gpio.h>
+#include <libopencm3/esp32/rcc.h>
+
+#include <stdbool.h> 
 #include <stdint.h>
 
 // UART Definiton 

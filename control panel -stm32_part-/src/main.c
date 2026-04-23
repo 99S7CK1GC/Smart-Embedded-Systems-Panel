@@ -17,7 +17,7 @@ static void clock_setup(void)
 int main(void)
 {
   clock_setup();
-  button_init();
+  buttons_setup();
   led_setup();
   uart_init(9600);
   uart_send_string("UART READY \n");

@@ -22,7 +22,7 @@ bool button_read(uint16_t pin)
   {
     delay_ms(20);
   
-  return (gpio_get(BUTTON_PORT, PIN) == 0);
+  return (gpio_get(BUTTON_PORT, pin) == 0);
   }
   return false;
 }
