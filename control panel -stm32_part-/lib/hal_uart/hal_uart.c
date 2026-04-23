@@ -8,12 +8,12 @@
 void uart_init(uint32_t baudrate)
 {
   // Enable clocks
-  rcc_periph_clock_enable(RCC_GPIOB);
+  rcc_periph_clock_enable(RCC_GPIOA);
   rcc_periph_clock_enable(RCC_USART2);
 
   // Configure GPIO
-  gpio_mode_setup(GPIOB, GPIO_MODE_AF, GPIO_PUPD_NONE, RX2 | TX2);
-  gpio_set_af(GPIOB, GPIO_AF7 ,RX2 | TX2);
+  gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, RX2 | TX2);
+  gpio_set_af(GPIOA, GPIO_AF7 ,RX2 | TX2);
 
   // Configure USART
   usart_set_baudrate(USART2, baudrate);
