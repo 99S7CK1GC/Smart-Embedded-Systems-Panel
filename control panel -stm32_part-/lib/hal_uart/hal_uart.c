@@ -35,7 +35,7 @@ void print_text(const char *str)
 {
   while(*str)
   {
-    uart_send_char(*str++);
+    print_text(*str++);
   }
 }
 char read_char(void)
