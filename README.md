@@ -1,148 +1,75 @@
-# Smart-Embedded-Systems-Panel
 
-# STM32F4 Smart Control Panel
 
-A bare-metal embedded system built on the STM32F411 Black Pill using libopencm3 and PlatformIO.
-No HAL library, no Arduino — just direct register access and clean C.
+4 embedded projects I'm building as part of a bigger system — a distributed embedded pipeline
+going from sensor firmware all the way to a live desktop dashboard.
 
-> 🚧 **Work in progress** — currently working on I2C + MPU-6050 integration.
+Each project is built standalone first, then they'll be connected together at the end.
 
----
-
-## What this is
-
-A control panel system with a live display, two sensors, and a state machine that switches between modes.
-The kind of thing you'd find as the brain of a small industrial controller or robotics node.
-
-It reads temperature and pressure from a BME280, raw accelerometer and gyroscope data from an MPU-6050,
-and shows everything on a 1.5" ST7789 TFT display. Two buttons let you switch between MANUAL, AUTO, and TEST modes.
+> 🚧 Currently working on P1. The rest are planned.
 
 ---
-
-## Hardware
-
-| Component | Role |
-|---|---|
-| STM32F411 Black Pill | Main MCU |
-| 1.5" ST7789 TFT (240×240) | Display |
-| BME280 | Temperature, pressure, humidity |
-| MPU-6050 | 3-axis accelerometer + 3-axis gyroscope |
-| 2× tactile buttons | Mode switch + confirm |
-| ST-Link V2 | Flashing + SWD debug |
-
-### Wiring summary
-
-**SPI1 — ST7789 display**
-```
-PA5 → SCL    PA7 → SDA    PA4 → CS
-PA2 → DC     PC14 → RES   3.3V → BLK
-```
-
-**I2C1 — BME280 + MPU-6050 (shared bus)**
-```
-PB6 → SCL (both sensors)
-PB7 → SDA (both sensors)
-4.7k pull-ups on both lines to 3.3V
-
-BME280  SDO → GND  → address 0x76
-MPU6050 AD0 → GND  → address 0x68
-```
-
-**GPIO**
-```
-PB0 → Button 1 (mode)     PB1 → Button 2 (confirm)
-PC13 → onboard LED (status)
-```
-
----
-
-## Firmware structure
-
-```
-src/
-├── main.c                  # clock init, super-loop
-├── app/
-│   ├── state_machine.c/h   # FSM: INIT → MANUAL ↔ AUTO → TEST → FAULT
-│   ├── ui_controller.c/h   # what to draw on the display per state
-│   └── sensor_manager.c/h  # read + filter sensor data
-├── drivers/
-│   ├── st7789.c/h          # SPI display driver
-│   ├── bme280.c/h          # BME280 I2C driver
-│   └── mpu6050.c/h         # MPU-6050 I2C driver
-└── hal/
-    ├── hal_gpio.c/h        # ✅ done
-    ├── hal_uart.c/h        # ✅ done
-    ├── hal_i2c.c/h         # 🔧 in progress
-    ├── hal_spi.c/h         # pending
-    └── hal_timer.c/h       # pending
-```
-
----
-
-## State machine
-
-```
-INIT → self-test all peripherals
-     ↓ pass              ↓ fail
-  MANUAL               FAULT
-  (live sensor display)
-     ↕ btn1
-   AUTO
-  (filtered view)
-     ↕ btn2 hold (2s) from any state
-   TEST
-  (PASS/FAIL per peripheral)
-```
-
-- **MANUAL** — shows live BME280 temp/pressure + MPU-6050 accel/gyro values on screen
-- **AUTO** — same data, different display layout, larger font
-- **TEST** — runs WHO_AM_I checks on both sensors + SPI ping on LCD, shows PASS/FAIL
-- **FAULT** — something failed, all outputs off, shows fault code, needs hardware reset
-
----
-
-## Build & flash
-
-```bash
-# build
-pio run
-
-# flash via ST-Link
-pio run -t upload
-
-# serial monitor (115200 baud)
-pio device monitor
-```
-
----
-
-## Progress
-
-- [x] PlatformIO project setup + platformio.ini
-- [x] Clock config (84 MHz HSI)
-- [x] HAL GPIO
-- [x] HAL UART + printf over serial
-- [ ] HAL I2C  ← working on this now
-- [ ] MPU-6050 driver (WHO_AM_I, wake from sleep, burst read)
-- [ ] BME280 driver (calibration + compensation formula)
-- [ ] HAL SPI
-- [ ] ST7789 display driver
-- [ ] Button debounce
-- [ ] State machine
-- [ ] UI controller
-- [ ] Self-test routine
-
----
-
-## Part of a 4-project embedded portfolio
-
-This is P1 of a standalone 4-project embedded systems portfolio:
 
 | # | Project | Stack | Status |
 |---|---|---|---|
-| P1 | Smart Control Panel | STM32F4 + libopencm3 | 🔧 In progress |
-| P2 | Vision IoT Node | ESP32-S3 + ESP-IDF + FreeRTOS | Pending |
-| P3 | IoT Backend | Orange Pi Zero 2W + FastAPI + MQTT | Pending |
-| P4 | Viz Dashboard | SDL2 + C++17 | Pending |
+| P1 | Smart Control Panel | STM32F411 · libopencm3 · PlatformIO | 🔧 In progress |
+| P2 | Vision IoT Node | ESP32-S3 CAM · ESP-IDF · FreeRTOS | 📋 Planned |
+| P3 | IoT Backend | Orange Pi Zero 2W · FastAPI · SQLite | 📋 Planned |
+| P4 | Viz Dashboard | SDL2 · C++17 · WebSocket | 📋 Planned |
 
-Each project is fully standalone — no cross-project dependencies.
+**End goal:** P1 and P2 publish sensor and vision data over MQTT → P3 stores and serves it → P4 visualizes it live.
+
+---
+
+## P1 — Smart Control Panel
+
+Bare-metal STM32F4 firmware with a live display, two sensors, and a state machine
+that switches between MANUAL, AUTO, TEST and FAULT modes.
+
+**Hardware:** STM32F411 Black Pill · 1.5" ST7789 TFT · BME280 · MPU-6050 · 2x buttons · ST-Link V2
+
+**Wiring:**
+```
+SPI1  → ST7789   (PA5 SCK, PA7 MOSI, PA4 CS, PA2 DC, PC14 RST)
+I2C1  → BME280   (PB6 SCL, PB7 SDA — address 0x76)
+      → MPU-6050 (same bus         — address 0x68)
+GPIO  → PB0 btn1, PB1 btn2, PC13 LED
+```
+
+**Progress:**
+- [x] HAL GPIO
+- [x] HAL UART
+- [ ] HAL I2C ← here now
+- [ ] MPU-6050 driver
+- [ ] BME280 driver
+- [ ] HAL SPI + ST7789 driver
+- [ ] State machine + UI
+
+```bash
+pio run -t upload    # flash
+pio device monitor   # serial 115200
+```
+
+---
+
+## P2 — Vision IoT Node
+
+ESP32-S3 CAM that detects motion using frame-delta and publishes events over MQTT.
+FreeRTOS — camera on Core 1, WiFi/MQTT on Core 0, tasks talk through queues only.
+
+---
+
+## P3 — IoT Backend
+
+MQTT broker + Python ingestor + FastAPI REST + WebSocket live feed running on the Orange Pi.
+Two separate systemd services sharing only a SQLite database. Survives reboots and crashes.
+
+---
+
+## P4 — Viz Dashboard
+
+SDL2 C++17 desktop app showing live sensor graphs at 60fps.
+Network thread feeds a ring buffer. Render thread drains it. They share nothing else.
+
+---
+
+**Tools:** Neovim · PlatformIO · ESP-IDF · CMake · ST-Link · OpenOCD · Debian Linux
