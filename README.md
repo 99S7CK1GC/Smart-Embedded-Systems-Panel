@@ -3,6 +3,8 @@
 4 embedded projects I'm building as part of a bigger system — a distributed embedded pipeline
 going from sensor firmware all the way to a live desktop dashboard.
 
+The STM32 detects vibration through the MPU-6050 & BME-280 and enters FAULT state. At the same moment the ESP32-S3 CAM detects motion near the machine. Both events hit the Orange Pi backend within milliseconds. The SDL2 dashboard shows the state badge flip to FAULT, a spike in the gyro graph, and a motion event appear in the log — all in real time.
+
 Each project is built standalone first, then they'll be connected together at the end.
 
 > 🚧 Currently working on P1. The rest are planned.
