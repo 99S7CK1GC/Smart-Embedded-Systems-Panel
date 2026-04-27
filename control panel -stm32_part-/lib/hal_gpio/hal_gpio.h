@@ -12,9 +12,8 @@
 
 // MPU6050 + BME280 Definition
 #define SDA1_PIN        GPIO7
-#define SDA1_PORT       GPIOB
 #define SCL1_PIN        GPIO6
-#define SCL1_PORT       GPIOB 
+#define I2C_PORT       GPIOB 
 
 // Screen Definition
 #define CLOCK_PIN       GPIO5
