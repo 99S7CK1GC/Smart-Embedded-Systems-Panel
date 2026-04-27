@@ -1,5 +1,8 @@
-#include "hal_uart"
+#include "hal_i2c"
 
+#include <libopencm3/stm32/rcc.h>
+#include <libopencm3/stm32/gpio.h>
+#include <libopencm3/stm32/i2c.h>
 void i2c_init()
 {
   rcc_periph_clock_enable(RCC_I2C1);
