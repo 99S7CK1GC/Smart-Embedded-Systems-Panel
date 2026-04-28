@@ -8,5 +8,6 @@
 #include <libopencm3/stm32/timer.h>
 
 void i2c_init();
-void i2c_read();
-void i2c_write();
+uint8_t i2c_read_reg();
+void i2c_read_bytes();
+void i2c_write_reg();
